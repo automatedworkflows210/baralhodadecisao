@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Baralho da Decisão</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('plano-fundo-baralho.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        header {
+            margin-top: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 1rem;
+        }
+
+        /* Área do Leque de Cartas */
+        .table-area {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: auto;
+        }
+
+        .card {
+            position: absolute;
+            width: 120px;
+            height: 180px;
+            cursor: pointer;
+            transition: transform 0.4s ease, z-index 0.4s ease;
+            transform-origin: bottom center;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            background-color: white;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Carta em Destaque (Zoom) */
+        .card.highlighted {
+            transform: translateY(-80px) scale(1.5) rotate(0deg) !important;
+            z-index: 1000 !important;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.6);
+        }
+
+        /* Painel de Controles */
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Estilo para o conteúdo do verso (se quiser simular texto + QR Code via HTML ou imagem pronta) */
+        /* Nota: Se o verso for uma imagem única contendo o desenho do verso, QR code e texto, basta usar a tag img. */
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>O Baralho da Decisão</h1>
+        <p>Escolha uma carta para revelar o seu destino</p>
+    </header>
+
+    <div class="table-area" id="tableArea">
+        <!-- As cartas serão geradas aqui via JavaScript -->
+    </div>
+
+    <div class="controls">
+        <button onclick="embaralharCartas()">Embaralhar Novamente</button>
+    </div>
+
+    <script>
+        // Defina aqui quantas cartas o seu baralho tem
+        const totalCartas = 5; 
+        let cartaSelecionada = null;
+
+        function criarBaralho() {
+            const tableArea = document.getElementById('tableArea');
+            tableArea.innerHTML = '';
+            cartaSelecionada = null;
+
+            // Criar as cartas em formato de leque
+            const anguloTotal = 60; // amplitude do leque em graus
+            const passo = anguloTotal / (totalCartas - 1 || 1);
+
+            for (let i = 1; i <= totalCartas; i++) {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                
+                // Atribuir estado inicial (frente)
+                card.dataset.estado = 'frente';
+                card.dataset.id = i;
+
+                const img = document.createElement('img');
+                img.src = `frente-${String(i).padStart(2, '0')}.jpg`;
+                img.alt = `Carta ${i}`;
+                card.appendChild(img);
+
+                // Calcular posição no leque
+                const angulo = -anguloTotal / 2 + (i - 1) * passo;
+                card.style.transform = `rotate(${angulo}deg) translateY(${Math.abs(angulo) * 1.5}px)`;
+                card.style.zIndex = i;
+
+                // Evento de clique na carta
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    lidarComCliqueCarta(card, i, angulo);
+                });
+
+                tableArea.appendChild(card);
+            }
+        }
+
+        function lidarComCliqueCarta(card, id, anguloOriginal) {
+            const img = card.querySelector('img');
+
+            if (cartaSelecionada && cartaSelecionada !== card) {
+                // Se já tem outra carta destacada, remove o destaque dela primeiro
+                resetarCarta(cartaSelecionada);
+            }
+
+            if (!card.classList.contains('highlighted')) {
+                // 1º Clique: Destaca a carta
+                card.classList.add('highlighted');
+                cartaSelecionada = card;
+            } else {
+                // 2º Clique: Mostra o verso (ou volta para a frente se clicar de novo)
+                if (card.dataset.estado === 'frente') {
+                    card.dataset.estado = 'verso';
+                    img.src = `verso-${String(id).padStart(2, '0')}.jpg`;
+                } else {
+                    card.dataset.estado = 'frente';
+                    img.src = `frente-${String(id).padStart(2, '0')}.jpg`;
+                }
+            }
+        }
+
+        function resetarCarta(card) {
+            card.classList.remove('highlighted');
+            card.dataset.estado = 'frente';
+            const id = card.dataset.id;
+            card.querySelector('img').src = `frente-${String(id).padStart(2, '0')}.jpg`;
+        }
+
+        // Clique fora da carta retoma o jogo ao normal
+        document.addEventListener('click', () => {
+            if (cartaSelecionada) {
+                resetarCarta(cartaSelecionada);
+                cartaSelecionada = null;
+            }
+        });
+
+        function embaralharCartas() {
+            // Recarrega o leque (poderia adicionar efeito visual de embaralhamento se quiser)
+            criarBaralho();
+        }
+
+        // Inicializar o jogo ao carregar a página
+        window.onload = criarBaralho;
+    </script>
+</body>
+</html>
