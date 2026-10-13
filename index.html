@@ -12,8 +12,8 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #2b2b2b;
-            background-image: url('plano-fundo-baralho.PNG');
+            background-color: #1a1a1a;
+            background-image: url('plano-fundo-baralho.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -53,6 +53,7 @@
             max-width: 1000px;
             padding: 20px;
             margin: auto;
+            width: 100%;
         }
 
         /* Cada slot de grupo */
@@ -70,27 +71,44 @@
             font-size: 0.9rem;
         }
 
+        /* Estilo da Carta */
         .card {
             width: 140px;
             height: 210px;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border-radius: 10px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-            background-color: white;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+            background-color: #ffffff;
             position: relative;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            border: 2px solid #ddd;
         }
 
         .card img {
             width: 100%;
             height: 100%;
-            border-radius: 10px;
+            border-radius: 8px;
             object-fit: cover;
-            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        /* Texto que fica ATRÁS da imagem (aparece se a imagem falhar/não existir) */
+        .card-fallback {
+            position: absolute;
+            z-index: 1;
+            text-align: center;
+            padding: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
         }
 
         .card:hover {
@@ -101,7 +119,7 @@
         .card.highlighted {
             transform: scale(1.4) !important;
             z-index: 1000 !important;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.7);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
         }
 
         /* Painel de Controles */
@@ -151,7 +169,7 @@
     </header>
 
     <div class="cards-container" id="cardsContainer">
-        <!-- As 4 cartas aleatórias serão geradas aqui -->
+        <!-- As 4 cartas aleatórias serão inseridas aqui -->
     </div>
 
     <div class="controls">
@@ -174,11 +192,14 @@
 
         function criarBaralho() {
             const container = document.getElementById('cardsContainer');
+            if (!container) return;
+            
             container.innerHTML = '';
             cartaSelecionada = null;
 
             grupos.forEach(grupo => {
                 const idSorteado = sortearNumero(grupo.inicio, grupo.fim);
+                const numeroFormatado = String(idSorteado).padStart(2, '0');
 
                 const slot = document.createElement('div');
                 slot.classList.add('card-slot');
@@ -190,22 +211,30 @@
                 const card = document.createElement('div');
                 card.classList.add('card');
                 card.dataset.estado = 'frente';
-                card.dataset.id = idSorteado;
+                card.dataset.id = numeroFormatado;
 
+                // Texto alternativo que fica por baixo da imagem
+                const fallback = document.createElement('div');
+                fallback.classList.add('card-fallback');
+                fallback.innerHTML = `Carta ${numeroFormatado}<br><small style="font-size:10px; color:#888;">frente-${numeroFormatado}.png</small>`;
+                card.appendChild(fallback);
+
+                // Criar a imagem principal (frente)
                 const img = document.createElement('img');
-                const numeroFormatado = String(idSorteado).padStart(2, '0');
-                img.src = `frente-${numeroFormatado}.PNG`;
-                img.alt = `Carta ${idSorteado}`;
+                img.src = `frente-${numeroFormatado}.png`;
+                img.alt = `Carta ${numeroFormatado}`;
 
+                // Se a imagem não for encontrada no GitHub, esconde a tag img com erro para mostrar o fallback
                 img.onerror = function() {
-                    card.innerHTML = `<span style="padding: 10px; text-align: center; font-size: 11px; color: #333;">Falta:<br>frente-${numeroFormatado}.PNG</span>`;
+                    this.style.display = 'none';
                 };
 
                 card.appendChild(img);
 
+                // Evento de clique
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    lidarComCliqueCarta(card, idSorteado);
+                    lidarComCliqueCarta(card, numeroFormatado);
                 });
 
                 slot.appendChild(label);
@@ -214,23 +243,38 @@
             });
         }
 
-        function lidarComCliqueCarta(card, id) {
-            const numeroFormatado = String(id).padStart(2, '0');
-
+        function lidarComCliqueCarta(card, numeroFormatado) {
             if (cartaSelecionada && cartaSelecionada !== card) {
                 resetarCarta(cartaSelecionada);
             }
 
             if (!card.classList.contains('highlighted')) {
+                // 1º Clique: Destaca
                 card.classList.add('highlighted');
                 cartaSelecionada = card;
             } else {
+                // 2º Clique: Alterna Frente/Verso
+                const img = card.querySelector('img');
+                const fallback = card.querySelector('.card-fallback');
+
                 if (card.dataset.estado === 'frente') {
                     card.dataset.estado = 'verso';
-                    card.innerHTML = `<img src="verso-${numeroFormatado}.PNG" alt="Verso ${numeroFormatado}" onerror="this.parentElement.innerHTML='<span style=\\'padding: 10px; text-align: center; font-size: 11px; color: #333;\\'>Falta:<br>verso-${numeroFormatado}.PNG</span>';">`;
+                    if (img) {
+                        img.style.display = 'block';
+                        img.src = `verso-${numeroFormatado}.png`;
+                    }
+                    if (fallback) {
+                        fallback.innerHTML = `Verso ${numeroFormatado}<br><small style="font-size:10px; color:#888;">verso-${numeroFormatado}.png</small>`;
+                    }
                 } else {
                     card.dataset.estado = 'frente';
-                    card.innerHTML = `<img src="frente-${numeroFormatado}.PNG" alt="Carta ${numeroFormatado}" onerror="this.parentElement.innerHTML='<span style=\\'padding: 10px; text-align: center; font-size: 11px; color: #333;\\'>Falta:<br>frente-${numeroFormatado}.PNG</span>';">`;
+                    if (img) {
+                        img.style.display = 'block';
+                        img.src = `frente-${numeroFormatado}.png`;
+                    }
+                    if (fallback) {
+                        fallback.innerHTML = `Carta ${numeroFormatado}<br><small style="font-size:10px; color:#888;">frente-${numeroFormatado}.png</small>`;
+                    }
                 }
             }
         }
@@ -238,9 +282,17 @@
         function resetarCarta(card) {
             card.classList.remove('highlighted');
             card.dataset.estado = 'frente';
-            const id = card.dataset.id;
-            const numeroFormatado = String(id).padStart(2, '0');
-            card.innerHTML = `<img src="frente-${numeroFormatado}.PNG" alt="Carta ${numeroFormatado}" onerror="this.parentElement.innerHTML='<span style=\\'padding: 10px; text-align: center; font-size: 11px; color: #333;\\'>Falta:<br>frente-${numeroFormatado}.PNG</span>';">`;
+            const numeroFormatado = card.dataset.id;
+            const img = card.querySelector('img');
+            const fallback = card.querySelector('.card-fallback');
+
+            if (img) {
+                img.style.display = 'block';
+                img.src = `frente-${numeroFormatado}.png`;
+            }
+            if (fallback) {
+                fallback.innerHTML = `Carta ${numeroFormatado}<br><small style="font-size:10px; color:#888;">frente-${numeroFormatado}.png</small>`;
+            }
         }
 
         document.addEventListener('click', () => {
@@ -254,7 +306,12 @@
             criarBaralho();
         }
 
-        window.onload = criarBaralho;
+        // Garante a execução assim que o documento estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', criarBaralho);
+        } else {
+            criarBaralho();
+        }
     </script>
 </body>
 </html>
