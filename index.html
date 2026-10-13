@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Baralho da Decisão</title>
+    <style>
+        /* Estilos Globais e Fundo */
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #222; /* Fundo escuro padrão se a imagem falhar */
+            background-image: url('plano-fundo-baralho.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Título e Subtítulo */
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0));
+            z-index: 10;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.9), 0 0 15px rgba(255,255,255,0.3);
+            filter: drop-shadow(0px 0px 10px rgba(255,255,255,0.2));
+        }
+
+        header p {
+            margin: 10px 0 0;
+            font-size: 1.4rem;
+            color: #ccc;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Área do Baralho (Mesa) */
+        .game-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .deck-area {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Estilo Base da Carta */
+        .card {
+            position: absolute;
+            width: 160px; /* Largura da carta */
+            height: 240px; /* Altura da carta */
+            cursor: pointer;
+            transition: transform 0.6s ease, box-shadow 0.6s ease, z-index 0s;
+            transform-origin: bottom center;
+            border-radius: 12px;
+            overflow: hidden; /* Garante que a imagem siga o raio da borda */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            background-color: rgba(255,255,255,0.1); /* Fundo sutil */
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Imagem dentro da carta */
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cobre todo o espaço mantendo proporção */
+            display: block;
+            pointer-events: none; /* Previne arraste da imagem */
+        }
+
+        /* Efeito Hover (passar o mouse) */
+        .card:hover:not(.highlighted) {
+            transform: translateY(-15px) rotate(0deg) scale(1.05) !important;
+            z-index: 100 !important;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
+        }
+
+        /* Estado da Carta em Destaque (Primeiro Clique) */
+        .card.highlighted {
+            transform: translate(-50%, -50%) translateY(-50px) scale(1.8) rotate(0deg) !important;
+            top: 50% !important;
+            left: 50% !important;
+            z-index: 1000 !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9), 0 0 30px rgba(255,255,255,0.4);
+            cursor: default;
+        }
+
+        /* Botões de Controle (na base) */
+        .controls {
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+            z-index: 10;
+        }
+
+        button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
+        }
+
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        /* Link do QR Code (invisível até virar) */
+        .card-link {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        /* Mostra o link quando a carta está virada (verso) */
+        .card.verso .card-link {
+            display: block;
+        }
+
+        /* Responsividade para telas pequenas */
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.2rem; }
+            header p { font-size: 1rem; }
+            .card { width: 100px; height: 150px; }
+            .deck-area { height: 300px; }
+            button { font-size: 1rem; padding: 12px 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>O Baralho da Decisão</h1>
+        <p>A dúvida paralisa. A ação liberta.</p>
+    </header>
+
+    <div class="game-container">
+        <div class="deck-area" id="deckArea">
+            <!-- As cartas aparecem aqui dinamicamente -->
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="embaralharCartas()">Embaralhar de Novo</button>
+    </div>
+
+    <script>
+        const totalCartas = 5; // Quantidade de cartas (frente-01 até frente-05)
+        let cartaSelecionada = null;
+
+        // Links que você quer que os QR Codes abram (um para cada carta)
+        const linksDasCartas = [
+            "https://meulink.com/decisao1",
+            "https://meulink.com/decisao2",
+            "https://meulink.com/decisao3",
+            "https://meulink.com/decisao4",
+            "https://meulink.com/decisao5"
+        ];
+
+        function criarBaralho() {
+            const deckArea = document.getElementById('deckArea');
+            deckArea.innerHTML = ''; // Limpa a área
+            cartaSelecionada = null;
+
+            // Amplitude total do leque (em graus)
+            const anguloTotalLeque = 50; 
+            const passoAngular = anguloTotalLeque / (totalCartas - 1);
+
+            for (let i = 1; i <= totalCartas; i++) {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                
+                // Define estado inicial (frente) e ID
+                card.dataset.estado = 'frente';
+                card.dataset.id = i;
+
+                // Cria a imagem da frente
+                const img = document.createElement('img');
+                img.src = `frente-${String(i).padStart(2, '0')}.png`;
+                img.alt = `Carta ${i}`;
+                card.appendChild(img);
+
+                // Cria o link invisível para o verso
+                const link = document.createElement('a');
+                link.href = linksDasCartas[i-1] || "#";
+                link.target = "_blank"; // Abre em nova aba
+                link.classList.add('card-link');
+                link.title = "Clique para abrir o link";
+                card.appendChild(link);
+
+                // Cálculo da posição no leque
+                const angulo = -anguloTotalLeque / 2 + (i - 1) * passoAngular;
+                // Aplica rotação e um pequeno deslocamento vertical para formar o arco
+                card.style.transform = `translateX(-50%) rotate(${angulo}deg) translateY(${Math.abs(angulo) * 1.8}px)`;
+                card.style.left = `50%`;
+                card.style.zIndex = i;
+
+                // Evento de clique
+                card.addEventListener('click', (e) => {
+                    // Previne o clique padrão do link se a carta estiver destacada
+                    if (card.classList.contains('highlighted') && card.dataset.estado === 'verso') {
+                        // Permite o clique no link
+                    } else {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        lidarComCliqueCarta(card, i);
+                    }
+                });
+
+                deckArea.appendChild(card);
+            }
+        }
+
+        function lidarComCliqueCarta(card, id) {
+            if (cartaSelecionada && cartaSelecionada !== card) {
+                // Se já houver outra carta destacada, resetamos ela
+                resetarCarta(cartaSelecionada);
+            }
+
+            if (!card.classList.contains('highlighted')) {
+                // PRIMEIRO CLIQUE: Destaca a carta (faz o zoom)
+                card.classList.add('highlighted');
+                cartaSelecionada = card;
+            } else {
+                // SEGUNDO CLIQUE: Vira a carta
+                const img = card.querySelector('img');
+                
+                if (card.dataset.estado === 'frente') {
+                    // Vira para o VERSO
+                    card.dataset.estado = 'verso';
+                    card.classList.add('verso');
+                    img.src = `verso-${String(id).padStart(2, '0')}.png`;
+                    img.alt = `Verso da Carta ${id}`;
+                } else {
+                    // Vira de volta para a FRENTE
+                    card.dataset.estado = 'frente';
+                    card.classList.remove('verso');
+                    img.src = `frente-${String(id).padStart(2, '0')}.png`;
+                    img.alt = `Carta ${id}`;
+                }
+            }
+        }
+
+        function resetarCarta(card) {
+            if (!card) return;
+            card.classList.remove('highlighted', 'verso');
+            card.dataset.estado = 'frente';
+            const id = card.dataset.id;
+            const img = card.querySelector('img');
+            img.src = `frente-${String(id).padStart(2, '0')}.png`;
+            img.alt = `Carta ${id}`;
+        }
+
+        // Clicar no fundo fecha a carta destacada
+        document.querySelector('.game-container').addEventListener('click', () => {
+            if (cartaSelecionada) {
+                resetarCarta(cartaSelecionada);
+                cartaSelecionada = null;
+            }
+        });
+
+        function embaralharCartas() {
+            // Um pequeno delay para dar sensação de ação
+            const deckArea = document.getElementById('deckArea');
+            deckArea.style.opacity = '0';
+            setTimeout(() => {
+                criarBaralho();
+                deckArea.style.opacity = '1';
+            }, 300);
+        }
+
+        // Inicia o jogo
+        window.onload = criarBaralho;
+    </script>
+</body>
+</html>
