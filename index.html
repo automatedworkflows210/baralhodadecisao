@@ -12,7 +12,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url('plano-fundo-baralho.jpg');
+            background-image: url('plano-fundo-baralho.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -192,7 +192,7 @@
 
                 const img = document.createElement('img');
                 const numeroFormatado = String(idSorteado).padStart(2, '0');
-                img.src = `frente-${numeroFormatado}.jpg`;
+                img.src = `frente-${numeroFormatado}.png`;
                 img.alt = `Carta ${idSorteado}`;
 
                 card.appendChild(img);
@@ -226,10 +226,10 @@
                 // 2º Clique: Alterna entre Frente e Verso
                 if (card.dataset.estado === 'frente') {
                     card.dataset.estado = 'verso';
-                    img.src = `verso-${numeroFormatado}.jpg`;
+                    img.src = `verso-${numeroFormatado}.png`;
                 } else {
                     card.dataset.estado = 'frente';
-                    img.src = `frente-${numeroFormatado}.jpg`;
+                    img.src = `frente-${numeroFormatado}.png`;
                 }
             }
         }
@@ -238,24 +238,4 @@
             card.classList.remove('highlighted');
             card.dataset.estado = 'frente';
             const id = card.dataset.id;
-            const numeroFormatado = String(id).padStart(2, '0');
-            card.querySelector('img').src = `frente-${numeroFormatado}.jpg`;
-        }
-
-        // Clique fora das cartas fecha qualquer carta em destaque
-        document.addEventListener('click', () => {
-            if (cartaSelecionada) {
-                resetarCarta(cartaSelecionada);
-                cartaSelecionada = null;
-            }
-        });
-
-        function embaralharCartas() {
-            criarBaralho();
-        }
-
-        // Inicializa ao carregar a página
-        window.onload = criarBaralho;
-    </script>
-</body>
-</html>
+            const numeroFormatado = String(id).padStart(2, '
