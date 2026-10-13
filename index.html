@@ -5,313 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O Baralho da Decisão</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
-            background-image: url('plano-fundo-baralho.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background: #1a1a1a url('plano-fundo-baralho.png') center/cover no-repeat;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             font-family: Arial, sans-serif;
-            overflow-x: hidden;
-        }
-
-        header {
-            margin-top: 20px;
             color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            text-align: center;
         }
-
-        header h1 {
-            margin: 0;
-            font-size: 2.2rem;
-        }
-
-        header p {
-            margin: 8px 0 0;
-            font-size: 1.1rem;
-        }
-
-        /* Área onde as 4 cartas são exibidas */
-        .cards-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            max-width: 1000px;
-            padding: 20px;
-            margin: auto;
-            width: 100%;
-        }
-
-        /* Cada slot de grupo */
-        .card-slot {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .group-label {
-            color: white;
-            font-weight: bold;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        /* Estilo da Carta */
+        header { text-align: center; margin-top: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; padding: 20px; }
+        .slot { display: flex; flex-direction: column; align-items: center; }
+        .label { font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
         .card {
-            width: 140px;
-            height: 210px;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-radius: 10px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-            background-color: #ffffff;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 2px solid #ddd;
+            width: 140px; height: 210px; cursor: pointer;
+            border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+            background: #fff; position: relative; overflow: hidden;
+            transition: transform 0.3s ease;
         }
-
-        .card img {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 2;
-        }
-
-        /* Texto que fica ATRÁS da imagem (aparece se a imagem falhar/não existir) */
-        .card-fallback {
-            position: absolute;
-            z-index: 1;
-            text-align: center;
-            padding: 10px;
-            color: #333;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        /* Carta em Destaque (Zoom) */
-        .card.highlighted {
-            transform: scale(1.4) !important;
-            z-index: 1000 !important;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
-        }
-
-        /* Painel de Controles */
-        .controls {
-            margin-bottom: 30px;
-        }
-
+        .card img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; display: block; }
+        .card.highlighted { transform: scale(1.4); z-index: 1000; box-shadow: 0 15px 30px rgba(0,0,0,0.8); }
+        .controls { margin-bottom: 30px; }
         button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: background 0.2s, transform 0.1s;
+            background-color: #4CAF50; color: white; border: none;
+            padding: 14px 28px; font-size: 1.1rem; font-weight: bold;
+            border-radius: 8px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-
-        button:hover {
-            background-color: #45a049;
-            transform: scale(1.03);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        /* Responsividade para telas menores */
-        @media (max-width: 650px) {
-            .card {
-                width: 100px;
-                height: 150px;
-            }
-            .cards-container {
-                gap: 12px;
-            }
-        }
+        button:hover { background-color: #45a049; }
+        @media (max-width: 650px) { .card { width: 100px; height: 150px; } }
     </style>
 </head>
 <body>
-
     <header>
         <h1>O Baralho da Decisão</h1>
-        <p>Clique em uma carta para destacar e clique novamente para revelar o verso</p>
+        <p>Clique para destacar e clique novamente para ver o verso</p>
     </header>
 
-    <div class="cards-container" id="cardsContainer">
-        <!-- As 4 cartas aleatórias serão inseridas aqui -->
-    </div>
+    <div class="container" id="grid"></div>
 
     <div class="controls">
-        <button onclick="embaralharCartas()">Embaralhar Novamente</button>
+        <button onclick="iniciarJogo()">Embaralhar Novamente</button>
     </div>
 
     <script>
         const grupos = [
-            { id: 1, inicio: 1, fim: 8, nome: "Grupo 1 (01 - 08)" },
-            { id: 2, inicio: 9, fim: 16, nome: "Grupo 2 (09 - 16)" },
-            { id: 3, inicio: 17, fim: 24, nome: "Grupo 3 (17 - 24)" },
-            { id: 4, inicio: 25, fim: 32, nome: "Grupo 4 (25 - 32)" }
+            { nome: "Grupo 1 (01-08)", min: 1, max: 8 },
+            { nome: "Grupo 2 (09-16)", min: 9, max: 16 },
+            { nome: "Grupo 3 (17-24)", min: 17, max: 24 },
+            { nome: "Grupo 4 (25-32)", min: 25, max: 32 }
         ];
 
-        let cartaSelecionada = null;
+        let ativa = null;
 
-        function sortearNumero(min, max) {
+        function sortear(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function criarBaralho() {
-            const container = document.getElementById('cardsContainer');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            cartaSelecionada = null;
+        function iniciarJogo() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            ativa = null;
 
-            grupos.forEach(grupo => {
-                const idSorteado = sortearNumero(grupo.inicio, grupo.fim);
-                const numeroFormatado = String(idSorteado).padStart(2, '0');
+            grupos.forEach(g => {
+                const id = sortear(g.min, g.max);
+                const num = String(id).padStart(2, '0');
 
                 const slot = document.createElement('div');
-                slot.classList.add('card-slot');
-
-                const label = document.createElement('div');
-                label.classList.add('group-label');
-                label.innerText = grupo.nome;
+                slot.className = 'slot';
+                slot.innerHTML = `<div class="label">${g.nome}</div>`;
 
                 const card = document.createElement('div');
-                card.classList.add('card');
+                card.className = 'card';
                 card.dataset.estado = 'frente';
-                card.dataset.id = numeroFormatado;
+                card.dataset.num = num;
 
-                // Texto alternativo que fica por baixo da imagem
-                const fallback = document.createElement('div');
-                fallback.classList.add('card-fallback');
-                fallback.innerHTML = `Carta ${numeroFormatado}<br><small style="font-size:10px; color:#888;">frente-${numeroFormatado}.png</small>`;
-                card.appendChild(fallback);
-
-                // Criar a imagem principal (frente)
                 const img = document.createElement('img');
-                img.src = `frente-${numeroFormatado}.png`;
-                img.alt = `Carta ${numeroFormatado}`;
-
-                // Se a imagem não for encontrada no GitHub, esconde a tag img com erro para mostrar o fallback
-                img.onerror = function() {
-                    this.style.display = 'none';
-                };
-
+                img.src = `frente-${num}.png`;
+                img.onerror = () => { card.innerHTML = `<div style="padding:10px;color:#333;text-align:center;font-size:12px;">frente-${num}.png</div>`; };
                 card.appendChild(img);
 
-                // Evento de clique
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    lidarComCliqueCarta(card, numeroFormatado);
+                    if (ativa && ativa !== card) resetar(ativa);
+
+                    if (!card.classList.contains('highlighted')) {
+                        card.classList.add('highlighted');
+                        ativa = card;
+                    } else {
+                        const n = card.dataset.num;
+                        if (card.dataset.estado === 'frente') {
+                            card.dataset.estado = 'verso';
+                            card.innerHTML = `<img src="verso-${n}.png" onerror="this.parentElement.innerHTML='<div style=\\'padding:10px;color:#333;text-align:center;font-size:12px;\\'>verso-${n}.png</div>';">`;
+                        } else {
+                            card.dataset.estado = 'frente';
+                            card.innerHTML = `<img src="frente-${n}.png" onerror="this.parentElement.innerHTML='<div style=\\'padding:10px;color:#333;text-align:center;font-size:12px;\\'>frente-${n}.png</div>';">`;
+                        }
+                    }
                 });
 
-                slot.appendChild(label);
                 slot.appendChild(card);
-                container.appendChild(slot);
+                grid.appendChild(slot);
             });
         }
 
-        function lidarComCliqueCarta(card, numeroFormatado) {
-            if (cartaSelecionada && cartaSelecionada !== card) {
-                resetarCarta(cartaSelecionada);
-            }
-
-            if (!card.classList.contains('highlighted')) {
-                // 1º Clique: Destaca
-                card.classList.add('highlighted');
-                cartaSelecionada = card;
-            } else {
-                // 2º Clique: Alterna Frente/Verso
-                const img = card.querySelector('img');
-                const fallback = card.querySelector('.card-fallback');
-
-                if (card.dataset.estado === 'frente') {
-                    card.dataset.estado = 'verso';
-                    if (img) {
-                        img.style.display = 'block';
-                        img.src = `verso-${numeroFormatado}.png`;
-                    }
-                    if (fallback) {
-                        fallback.innerHTML = `Verso ${numeroFormatado}<br><small style="font-size:10px; color:#888;">verso-${numeroFormatado}.png</small>`;
-                    }
-                } else {
-                    card.dataset.estado = 'frente';
-                    if (img) {
-                        img.style.display = 'block';
-                        img.src = `frente-${numeroFormatado}.png`;
-                    }
-                    if (fallback) {
-                        fallback.innerHTML = `Carta ${numeroFormatado}<br><small style="font-size:10px; color:#888;">frente-${numeroFormatado}.png</small>`;
-                    }
-                }
-            }
+        function resetar(c) {
+            c.classList.remove('highlighted');
+            c.dataset.estado = 'frente';
+            const n = c.dataset.num;
+            c.innerHTML = `<img src="frente-${n}.png" onerror="this.parentElement.innerHTML='<div style=\\'padding:10px;color:#333;text-align:center;font-size:12px;\\'>frente-${n}.png</div>';">`;
         }
 
-        function resetarCarta(card) {
-            card.classList.remove('highlighted');
-            card.dataset.estado = 'frente';
-            const numeroFormatado = card.dataset.id;
-            const img = card.querySelector('img');
-            const fallback = card.querySelector('.card-fallback');
+        document.addEventListener('click', () => { if (ativa) { resetar(ativa); ativa = null; } });
 
-            if (img) {
-                img.style.display = 'block';
-                img.src = `frente-${numeroFormatado}.png`;
-            }
-            if (fallback) {
-                fallback.innerHTML = `Carta ${numeroFormatado}<br><small style="font-size:10px; color:#888;">frente-${numeroFormatado}.png</small>`;
-            }
-        }
-
-        document.addEventListener('click', () => {
-            if (cartaSelecionada) {
-                resetarCarta(cartaSelecionada);
-                cartaSelecionada = null;
-            }
-        });
-
-        function embaralharCartas() {
-            criarBaralho();
-        }
-
-        // Garante a execução assim que o documento estiver pronto
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', criarBaralho);
-        } else {
-            criarBaralho();
-        }
+        window.onload = iniciarJogo;
     </script>
 </body>
 </html>
