@@ -12,7 +12,8 @@
         body {
             margin: 0;
             padding: 0;
-            background-image: url('plano-fundo-baralho.png');
+            background-color: #2b2b2b;
+            background-image: url('plano-fundo-baralho.PNG');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -78,6 +79,10 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.4);
             background-color: white;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         .card img {
@@ -154,7 +159,6 @@
     </div>
 
     <script>
-        // Configuração dos 4 grupos de cartas
         const grupos = [
             { id: 1, inicio: 1, fim: 8, nome: "Grupo 1 (01 - 08)" },
             { id: 2, inicio: 9, fim: 16, nome: "Grupo 2 (09 - 16)" },
@@ -164,7 +168,6 @@
 
         let cartaSelecionada = null;
 
-        // Função para sortear um número inteiro entre min e max (inclusive)
         function sortearNumero(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
@@ -175,7 +178,6 @@
             cartaSelecionada = null;
 
             grupos.forEach(grupo => {
-                // Sorteia uma carta aleatória dentro do intervalo do grupo
                 const idSorteado = sortearNumero(grupo.inicio, grupo.fim);
 
                 const slot = document.createElement('div');
@@ -192,12 +194,15 @@
 
                 const img = document.createElement('img');
                 const numeroFormatado = String(idSorteado).padStart(2, '0');
-                img.src = `frente-${numeroFormatado}.png`;
+                img.src = `frente-${numeroFormatado}.PNG`;
                 img.alt = `Carta ${idSorteado}`;
+
+                img.onerror = function() {
+                    card.innerHTML = `<span style="padding: 10px; text-align: center; font-size: 11px; color: #333;">Falta:<br>frente-${numeroFormatado}.PNG</span>`;
+                };
 
                 card.appendChild(img);
 
-                // Evento de clique na carta
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
                     lidarComCliqueCarta(card, idSorteado);
@@ -210,26 +215,22 @@
         }
 
         function lidarComCliqueCarta(card, id) {
-            const img = card.querySelector('img');
             const numeroFormatado = String(id).padStart(2, '0');
 
             if (cartaSelecionada && cartaSelecionada !== card) {
-                // Se clicar em outra carta, reseta a que estava aberta antes
                 resetarCarta(cartaSelecionada);
             }
 
             if (!card.classList.contains('highlighted')) {
-                // 1º Clique: Destaca a carta (dá zoom)
                 card.classList.add('highlighted');
                 cartaSelecionada = card;
             } else {
-                // 2º Clique: Alterna entre Frente e Verso
                 if (card.dataset.estado === 'frente') {
                     card.dataset.estado = 'verso';
-                    img.src = `verso-${numeroFormatado}.png`;
+                    card.innerHTML = `<img src="verso-${numeroFormatado}.PNG" alt="Verso ${numeroFormatado}" onerror="this.parentElement.innerHTML='<span style=\\'padding: 10px; text-align: center; font-size: 11px; color: #333;\\'>Falta:<br>verso-${numeroFormatado}.PNG</span>';">`;
                 } else {
                     card.dataset.estado = 'frente';
-                    img.src = `frente-${numeroFormatado}.png`;
+                    card.innerHTML = `<img src="frente-${numeroFormatado}.PNG" alt="Carta ${numeroFormatado}" onerror="this.parentElement.innerHTML='<span style=\\'padding: 10px; text-align: center; font-size: 11px; color: #333;\\'>Falta:<br>frente-${numeroFormatado}.PNG</span>';">`;
                 }
             }
         }
@@ -238,4 +239,22 @@
             card.classList.remove('highlighted');
             card.dataset.estado = 'frente';
             const id = card.dataset.id;
-            const numeroFormatado = String(id).padStart(2, '
+            const numeroFormatado = String(id).padStart(2, '0');
+            card.innerHTML = `<img src="frente-${numeroFormatado}.PNG" alt="Carta ${numeroFormatado}" onerror="this.parentElement.innerHTML='<span style=\\'padding: 10px; text-align: center; font-size: 11px; color: #333;\\'>Falta:<br>frente-${numeroFormatado}.PNG</span>';">`;
+        }
+
+        document.addEventListener('click', () => {
+            if (cartaSelecionada) {
+                resetarCarta(cartaSelecionada);
+                cartaSelecionada = null;
+            }
+        });
+
+        function embaralharCartas() {
+            criarBaralho();
+        }
+
+        window.onload = criarBaralho;
+    </script>
+</body>
+</html>
