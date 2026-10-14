@@ -42,7 +42,7 @@
 <body>
     <header>
         <h1>O Baralho da Decisão</h1>
-        <p>Clique para destacar e clique novamente para ver o verso (ou clique no verso para buscar no Lens)</p>
+        <p>Clique para destacar e clique novamente para ver o verso</p>
     </header>
 
     <div class="container" id="grid"></div>
@@ -90,16 +90,6 @@
 
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
-
-                    // Se a carta já estiver no verso e o usuário clicar de nela de novo, abre o Google Lens com a imagem do verso
-                    if (card.classList.contains('highlighted') && card.dataset.estado === 'verso') {
-                        // Pega o link completo absoluto da imagem do verso atual
-                        const urlVerso = new URL(`verso-${num}.png`, window.location.href).href;
-                        // Abre a busca do Google Lens em outra aba
-                        window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(urlVerso)}`, '_blank');
-                        return;
-                    }
-
                     if (ativa && ativa !== card) resetar(ativa);
 
                     if (!card.classList.contains('highlighted')) {
