@@ -42,7 +42,7 @@
 <body>
     <header>
         <h1>O Baralho da Decisão</h1>
-        <p>Clique para destacar e clique novamente para ver o verso</p>
+        <p>Clique para destacar, clique de novo para ver o verso, e clique no verso para ler o QR Code</p>
     </header>
 
     <div class="container" id="grid"></div>
@@ -90,6 +90,13 @@
 
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
+
+                    // Se a carta já estiver destacada e no verso, abre o site do Invertexto em outra guia
+                    if (card.classList.contains('highlighted') && card.dataset.estado === 'verso') {
+                        window.open('https://www.invertexto.com/leitor-qr-code-online', '_blank');
+                        return;
+                    }
+
                     if (ativa && ativa !== card) resetar(ativa);
 
                     if (!card.classList.contains('highlighted')) {
@@ -102,7 +109,7 @@
                             card.innerHTML = `<img src="verso-${n}.png" onerror="this.parentElement.innerHTML='<div style=\\'padding:10px;color:#333;text-align:center;font-size:12px;\\'>verso-${n}.png</div>';">`;
                         } else {
                             card.dataset.estado = 'frente';
-                            card.innerHTML = `<img src="frente-${n}.png" onerror="this.parentElement.innerHTML='<div style=\\'padding:10px;color:#333;text-align:center;font-size:12px;\\'>frente-${n}.png</div>';">`;
+                            card.innerHTML = `<img src="frente-${n}.png" onerror="this.parentElement.innerHTML='<div style=\\\'padding:10px;color:#333;text-align:center;font-size:12px;\\'>frente-${n}.png</div>';">`;
                         }
                     }
                 });
